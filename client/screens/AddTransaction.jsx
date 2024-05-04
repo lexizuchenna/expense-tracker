@@ -1,0 +1,183 @@
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  ToastAndroid,
+  ScrollView,
+  StatusBar,
+  KeyboardAvoidingView,
+  Keyboard,
+} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import DropDownPicker from "react-native-dropdown-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import dayjs from "dayjs";
+
+import Loader from "../components/Loader";
+import AuthHeader from "../components/headers/AuthHeader";
+
+import { useMainContext } from "../context/MainContext";
+import { COLORS, SIZES } from "../constants/theme";
+import gStyles from "../styles/styles";
+import { Ionicons } from "@expo/vector-icons";
+
+const AddTransaction = () => {
+  const inputRef = useRef();
+  const navigation = useNavigation();
+  const { url } = useMainContext();
+  const { params } = useRoute();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: "Shopping", value: "shopping" },
+    { label: "Subscription", value: "subscription" },
+    { label: "Food", value: "food" },
+    { label: "Miscellaneous", value: "miscellaneous" },
+  ]);
+  const [formData, setFormData] = useState({
+    category: params.type === "income" ? "credit" : "",
+    desc: "",
+    amount: "",
+    date: new Date(),
+  });
+
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
+
+  const bg = params.type === "income" ? COLORS.green100 : COLORS.red100;
+
+  return (
+    <View style={gStyles.container(bg)}>
+      <StatusBar backgroundColor={bg} />
+      <AuthHeader text="Income" color={COLORS.light100} bg={bg} />
+      <View style={styles.inputContainer}>
+        <Text
+          style={{
+            color: COLORS.light80,
+            fontFamily: "semi-bold",
+            fontSize: 18,
+            opacity: 0.64,
+          }}
+        >
+          How much?
+        </Text>
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          keyboardType="numeric"
+          placeholder="₦0"
+          placeholderTextColor={COLORS.light80}
+          autoComplete="off"
+          value={formData.amount}
+          onChangeText={(amount) =>
+            setFormData((prev) => ({ ...prev, amount }))
+          }
+        />
+      </View>
+
+      <View style={styles.view1}>
+        {params.type === "expense" && (
+          <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+            style={{
+              borderColor: COLORS.light40,
+            }}
+            dropDownContainerStyle={{
+              borderColor: COLORS.light40,
+              marginTop: 5,
+            }}
+            labelStyle={{
+              fontFamily: "medium",
+            }}
+            onPress={() => Keyboard.dismiss()}
+            placeholder="Select a category"
+            placeholderStyle={{ fontFamily: "medium", color: COLORS.light20 }}
+          />
+        )}
+        <TextInput
+          placeholder="Description"
+          style={gStyles.input}
+          placeholderTextColor={COLORS.light20}
+        />
+        <TouchableOpacity
+          style={{
+            borderWidth: 1,
+            borderRadius: 9,
+            borderColor: COLORS.light40,
+            paddingVertical: 13,
+            marginVertical: 0,
+            paddingHorizontal: 10,
+            width: SIZES.width - 40,
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+          onPress={() => setIsDateOpen((prev) => !prev)}
+        >
+          <Text> {dayjs(formData.date).format("DD, MMMM, YYYY")} </Text>
+          <Ionicons name="calendar" size={20} color={COLORS.light20} />
+        </TouchableOpacity>
+        <View style={styles.btnContainer}>
+          <TouchableOpacity style={gStyles.btn()} onPress={() => {}}>
+            <Text style={gStyles.btnText()}>Add</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      {isDateOpen && (
+        <DateTimePicker
+          value={formData.date}
+          onChange={(e, date) => {
+            setIsDateOpen(() => false);
+            setFormData((prev) => ({ ...prev, date }));
+          }}
+          mode="date"
+        />
+      )}
+      <Loader visible={isLoading} />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    marginHorizontal: 20,
+    marginTop: 60,
+  },
+  input: {
+    color: COLORS.light100,
+    fontSize: 50,
+    fontFamily: "bold",
+    // lineHeight: 0.001,
+  },
+  view1: {
+    flex: 1,
+    backgroundColor: COLORS.light100,
+    marginTop: 40,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    elevation: 4,
+  },
+  btnContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+
+export default AddTransaction;
