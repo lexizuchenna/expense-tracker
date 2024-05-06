@@ -30,7 +30,8 @@ const Home = () => {
   const topHeight =
     Platform.OS === "android" ? StatusBar.currentHeight : insets;
 
-  const { url, isAction, user, trxs } = useMainContext();
+  const { url, isAction, user, trxs, triggerTrx, setTriggerTrx } =
+    useMainContext();
 
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
@@ -39,12 +40,12 @@ const Home = () => {
     {
       name: "Income",
       spend: income,
-      color: COLORS.green80,
+      color: COLORS.blue200,
     },
     {
       name: "Expense",
       spend: expense,
-      color: COLORS.red60,
+      color: COLORS.blue400,
     },
   ];
 
@@ -64,7 +65,7 @@ const Home = () => {
 
     setIncome(totalIn);
     setExpense(totalEx);
-  }, [trxs]);
+  }, [triggerTrx, trxs]);
 
   return (
     <View style={gStyles.container()}>
@@ -100,9 +101,6 @@ const Home = () => {
             </Text>
           </View>
 
-          {/* <TouchableOpacity>
-            <AntDesign size={30} name="logout" color={COLORS.blue100} />
-          </TouchableOpacity> */}
           <TouchableOpacity
             style={{
               borderColor: COLORS.blue100,
@@ -116,40 +114,35 @@ const Home = () => {
             />
           </TouchableOpacity>
         </View>
-        {/* <View style={{ alignItems: "center" }}>
-          <Text style={{ fontFamily: "semi-bold", color: COLORS.light20 }}>
-            Account Balance
-          </Text>
-          <Text style={{ fontFamily: "semi-bold", fontSize: 40 }}>
-            ₦9,400,000
-          </Text>
-        </View> */}
+
         <View style={styles.moneyWrapper}>
           <View
             style={[
               styles.moneyContainer,
               {
-                backgroundColor: COLORS.green100,
+                backgroundColor: COLORS.blue100,
               },
             ]}
           >
             <Text style={{ fontFamily: "semi-bold", color: COLORS.light100 }}>
               Income
             </Text>
-            <Text style={styles.moneyText}>₦{income.toLocaleString()}</Text>
+            <Text style={styles.moneyText()}>₦{income.toLocaleString()}</Text>
           </View>
           <View
             style={[
               styles.moneyContainer,
               {
-                backgroundColor: COLORS.red100,
+                backgroundColor: COLORS.blue500,
               },
             ]}
           >
-            <Text style={{ fontFamily: "semi-bold", color: COLORS.light100 }}>
+            <Text style={{ fontFamily: "semi-bold", color: COLORS.blue100 }}>
               Expenses
             </Text>
-            <Text style={styles.moneyText}>₦{expense.toLocaleString()}</Text>
+            <Text style={styles.moneyText(COLORS.blue100)}>
+              ₦{expense.toLocaleString()}
+            </Text>
           </View>
         </View>
       </LinearGradient>
@@ -165,19 +158,49 @@ const Home = () => {
           Income/Expense Chart
         </Text>
         {income !== 0 || expense !== 0 ? (
-          <PieChart
-            data={data}
-            width={SIZES.width}
-            height={220}
-            accessor={"spend"}
-            backgroundColor={"transparent"}
-            center={[SIZES.width / 4, 0]}
-            chartConfig={{
-              color: () => `rgba(0, 0, 0, 1)`,
-            }}
-            style={{ marginTop: -15 }}
-            hasLegend={false}
-          />
+          <View style={styles.chartContainer}>
+            <View style={{ marginRight: 40, paddingLeft: 20 }}>
+              <View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <View style={styles.chartLegend(COLORS.blue100)}></View>
+                  <Text style={{ fontFamily: "medium" }}>Income</Text>
+                </View>
+                <Text style={styles.chartText}>₦{income.toLocaleString()}</Text>
+              </View>
+              <View style={{ marginTop: 10 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                  }}
+                >
+                  <View style={styles.chartLegend(COLORS.blue400)}></View>
+                  <Text style={{ fontFamily: "medium" }}>Expense</Text>
+                </View>
+                <Text style={styles.chartText}>
+                  ₦{expense.toLocaleString()}
+                </Text>
+              </View>
+            </View>
+            <PieChart
+              data={data}
+              width={SIZES.width}
+              height={220}
+              accessor={"spend"}
+              backgroundColor={"transparent"}
+              chartConfig={{
+                color: () => `rgba(0, 0, 0, 1)`,
+              }}
+              style={{ marginTop: -15, flex: 1 }}
+              hasLegend={false}
+            />
+          </View>
         ) : (
           <View
             style={{
@@ -218,6 +241,7 @@ const Home = () => {
               paddingVertical: 10,
               borderRadius: 20,
             }}
+            onPress={() => navigation.navigate("transactions")}
           >
             <Text
               style={{
@@ -231,11 +255,12 @@ const Home = () => {
           </TouchableOpacity>
         </View>
         <View>
-          {/* {console.log("tt", trxs)} */}
           {trxs.length > 0 ? (
             <FlatList
               data={trxs}
-              renderItem={({ item }) => <TransactionCard transaction={item} />}
+              renderItem={({ item, index }) => (
+                <TransactionCard transaction={item} i={index} />
+              )}
               showsVerticalScrollIndicator={false}
               keyExtractor={(_, i) => i}
             />
@@ -295,10 +320,28 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: SIZES.width / 2 - 30,
   },
-  moneyText: {
+  moneyText: (color) => ({
     fontFamily: "bold",
-    color: COLORS.light100,
+    color: color ? color : COLORS.light100,
     fontSize: 22,
+  }),
+  chartText: {
+    marginLeft: 15,
+    fontFamily: "bold",
+    fontSize: 22,
+    color: COLORS.dark25,
   },
-  headerContainer: {},
+  chartContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 20,
+  },
+  chartLegend: (bg) => ({
+    height: 17,
+    width: 5,
+    backgroundColor: bg,
+    borderRadius: 10,
+    marginRight: 10,
+  }),
 });

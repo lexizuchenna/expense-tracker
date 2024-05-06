@@ -23,7 +23,7 @@ const Action = () => {
   ];
 
   function handlePress(type) {
-    navigation.navigate("add-transaction", { type });
+    navigation.navigate("add-transaction", { type, mode: "new" });
     return setIsAction((prev) => !prev);
   }
   return (

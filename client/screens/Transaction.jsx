@@ -6,32 +6,74 @@ import {
   StyleSheet,
   Platform,
   StatusBar,
+  ToastAndroid,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 
 import DeleteAction from "../components/DeleteAction";
+import Loader from "../components/Loader";
 
+import { useMainContext } from "../context/MainContext";
 import { COLORS } from "../constants/theme";
 import gStyles from "../styles/styles";
 
 const Transaction = () => {
+  const { url, trxs, setTrxs, setTriggerTrx } = useMainContext();
   const [isDelete, setIsDelete] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { params } = useRoute();
   const navigation = useNavigation();
 
   const { data } = params;
 
   const bg = data.category === "credit" ? COLORS.green100 : COLORS.red100;
+  const type = data.category === "credit" ? "income" : "expense";
+
+  const id = data._id;
 
   const insets = useSafeAreaInsets();
   const topHeight =
     Platform.OS === "android" ? StatusBar.currentHeight : insets;
 
-  function onDelete() {}
+  async function onDelete() {
+    try {
+      setIsLoading(true);
+
+      const { data } = await url.delete(`/transaction?trx_id=${id}`);
+
+      if (data.status === 200) {
+        const transactions = trxs;
+
+        const i = transactions.findIndex((trx) => trx._id === id);
+
+        transactions.splice(i, 1);
+
+        setTrxs(transactions);
+
+        setTriggerTrx((prev) => !prev);
+
+        ToastAndroid.show(
+          "Transaction deleted successfully",
+          ToastAndroid.SHORT
+        );
+        return navigation.navigate("home");
+      }
+    } catch (error) {
+      console.error("delete-trx: ", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Internal server error";
+      return ToastAndroid.show(message, ToastAndroid.SHORT);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   function onCancel() {
     setIsDelete(() => false);
@@ -59,7 +101,7 @@ const Transaction = () => {
               color={COLORS.light100}
             />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Transaction Detail</Text>
+          <Text style={styles.headerText}>Transaction Details</Text>
           <TouchableOpacity
             style={styles.deleteBtn}
             onPress={() => setIsDelete(true)}
@@ -85,7 +127,7 @@ const Transaction = () => {
               opacity: 0.64,
             }}
           >
-            {dayjs(data.date).format("dddd DD MMMM, YYYY")}
+            {dayjs(data.createdAt).format("dddd DD MMMM, YYYY")}
           </Text>
         </View>
       </View>
@@ -123,7 +165,16 @@ const Transaction = () => {
           {data.desc}
         </Text>
         <View style={styles.btnContainer}>
-          <TouchableOpacity style={gStyles.btn()} onPress={() => {}}>
+          <TouchableOpacity
+            style={gStyles.btn()}
+            onPress={() =>
+              navigation.navigate("add-transaction", {
+                type,
+                mode: "edit",
+                data,
+              })
+            }
+          >
             <Text style={gStyles.btnText()}>Edit</Text>
           </TouchableOpacity>
         </View>
@@ -133,6 +184,7 @@ const Transaction = () => {
         onCancel={onCancel}
         onDelete={onDelete}
       />
+      <Loader visible={isLoading} />
     </View>
   );
 };

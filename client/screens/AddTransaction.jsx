@@ -5,9 +5,7 @@ import {
   TextInput,
   StyleSheet,
   ToastAndroid,
-  ScrollView,
   StatusBar,
-  KeyboardAvoidingView,
   Keyboard,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
@@ -27,8 +25,10 @@ import { Ionicons } from "@expo/vector-icons";
 const AddTransaction = () => {
   const inputRef = useRef();
   const navigation = useNavigation();
-  const { url, trxs, setTrxs } = useMainContext();
+  const { url, trxs, setTrxs, setTriggerTrx } = useMainContext();
   const { params } = useRoute();
+
+  const { data, mode } = params;
 
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -37,14 +37,25 @@ const AddTransaction = () => {
     { label: "Shopping", value: "shopping" },
     { label: "Subscription", value: "subscription" },
     { label: "Food", value: "food" },
+    { label: "Transportation", value: "transportation" },
     { label: "Miscellaneous", value: "miscellaneous" },
   ]);
-  const [formData, setFormData] = useState({
-    category: params.type === "income" ? "credit" : "",
-    desc: "",
-    amount: "",
-    date: new Date(),
-  });
+  const [formData, setFormData] = useState(
+    data
+      ? {
+          category: data?.category,
+          desc: data?.desc,
+          amount: data?.amount.toString(),
+          date: new Date(data?.createdAt),
+          id: data?._id,
+        }
+      : {
+          category: params.type === "income" ? "credit" : "",
+          desc: "",
+          amount: "",
+          date: new Date(),
+        }
+  );
 
   useEffect(() => {
     inputRef.current.focus();
@@ -57,17 +68,49 @@ const AddTransaction = () => {
 
       setIsLoading(true);
 
+      if (mode === "edit") {
+        const { data } = await url.patch("/transaction", formData);
+
+        const transactions = trxs;
+
+        const i = transactions.findIndex(
+          (trx) => trx._id === data.transaction._id
+        );
+
+        transactions[i] = data.transaction;
+
+        setTrxs(transactions);
+
+        transactions.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        setTriggerTrx((prev) => !prev);
+
+        ToastAndroid.show(data.message, ToastAndroid.SHORT);
+
+        return navigation.navigate("home");
+      }
+
       const { data } = await url.post("/transaction", formData);
 
       const transactions = trxs;
 
       transactions.push(data.transaction);
 
-      console.log(transactions);
-
       setTrxs(transactions);
+
+      transactions.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setTriggerTrx((prev) => !prev);
+
+      ToastAndroid.show(data.message, ToastAndroid.SHORT);
+
+      return navigation.navigate("home");
     } catch (error) {
-      // console.error("add-transaction: ", JSON.stringify(error));
+      console.error("add-transaction: ", error);
       const message =
         error?.response?.data?.message ||
         error?.response?.data ||
@@ -163,7 +206,9 @@ const AddTransaction = () => {
             style={gStyles.btn()}
             onPress={handleAddTransaction}
           >
-            <Text style={gStyles.btnText()}>Add</Text>
+            <Text style={gStyles.btnText()}>
+              {mode === "edit" ? "Update" : "Add"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

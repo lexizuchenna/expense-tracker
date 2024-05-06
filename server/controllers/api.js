@@ -192,6 +192,52 @@ async function addTransaction(req, res) {
   }
 }
 
+async function updateTransaction(req, res) {
+  try {
+    if (Object.values(req.body).includes(""))
+      return res.status(200).json({ message: "Fill all fields", status: 400 });
+
+    const { id } = req.user;
+
+    const transaction = await Transaction.findByIdAndUpdate(
+      req.body.id,
+      {
+        ...req.body,
+        createdAt: req.body.date,
+      },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Transaction updated", transaction, status: 200 });
+  } catch (error) {
+    console.error("create-trx: ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", status: 500 });
+  }
+}
+
+async function deleteTransaction(req, res) {
+  try {
+    const { trx_id } = req.query;
+
+    console.log(trx_id);
+
+    const transaction = await Transaction.findByIdAndDelete(trx_id);
+
+    return res
+      .status(200)
+      .json({ message: "Transaction updated", transaction, status: 200 });
+  } catch (error) {
+    console.error("create-trx: ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", status: 500 });
+  }
+}
+
 async function getTransactions(req, res) {
   try {
     const { id } = req.user;
@@ -216,5 +262,7 @@ module.exports = {
   loginUser,
   getCode,
   addTransaction,
+  updateTransaction,
+  deleteTransaction,
   getTransactions,
 };

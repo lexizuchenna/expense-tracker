@@ -10,6 +10,7 @@ export const MainContext = ({ children }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [triggerUser, setTriggerUser] = useState(false);
+  const [triggerTrx, setTriggerTrx] = useState(false);
   const [trxs, setTrxs] = useState([]);
 
   function newAbortSignal(time) {
@@ -73,6 +74,9 @@ export const MainContext = ({ children }) => {
 
         isAction,
         setIsAction,
+
+        triggerTrx,
+        setTriggerTrx,
       }}
     >
       {children}

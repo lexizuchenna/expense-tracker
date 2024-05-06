@@ -1,16 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  TextInput,
-  ToastAndroid,
-  ScrollView,
-  StatusBar,
-  FlatList,
-} from "react-native";
+import { StyleSheet, View, StatusBar, FlatList } from "react-native";
 import { useState } from "react";
 
 import { useMainContext } from "../../context/MainContext";
@@ -23,79 +12,10 @@ import gStyles from "../../styles/styles";
 import TransactionCard from "../../components/cards/TransactionCard";
 import Action from "../../components/Action";
 
-const Profile = () => {
-  const { url1, setUser, user, isAction } = useMainContext();
+const Transactions = () => {
+  const { user, isAction, trxs } = useMainContext();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullname: user?.fullname,
-    email: user?.email,
-    phone_number: user?.phone_number,
-    password: "",
-  });
-
-  const transactions = [
-    {
-      category: "shopping",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2003-02-20",
-    },
-    {
-      category: "food",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2024-02-12",
-    },
-    {
-      category: "subscription",
-      desc: "MTN Subscription",
-      amount: "1000",
-      date: "2033-02-12",
-    },
-    {
-      category: "credit",
-      desc: "Salary for Dec",
-      amount: "1000",
-      date: "2023-02-14",
-    },
-    {
-      category: "shopping",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2003-02-20",
-    },
-    {
-      category: "food",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2024-02-12",
-    },
-    {
-      category: "subscription",
-      desc: "MTN Subscription",
-      amount: "1000",
-      date: "2033-02-12",
-    },
-    {
-      category: "credit",
-      desc: "Salary for Dec",
-      amount: "1000",
-      date: "2023-02-14",
-    },
-    {
-      category: "subscription",
-      desc: "MTN Subscription",
-      amount: "1000",
-      date: "2033-02-12",
-    },
-    {
-      category: "credit",
-      desc: "Salary for Dec",
-      amount: "1000",
-      date: "2023-02-14",
-    },
-  ];
 
   return (
     <View style={gStyles.container()}>
@@ -104,10 +24,12 @@ const Profile = () => {
         barStyle="dark-content"
       />
       <AuthHeader text="All Transactions" />
-      <View style={{ paddingBottom: 150 }}>
+      <View style={{ paddingBottom: 150, marginHorizontal: 20 }}>
         <FlatList
-          data={transactions}
-          renderItem={({ item }) => <TransactionCard transaction={item} />}
+          data={trxs}
+          renderItem={({ item, index }) => (
+            <TransactionCard transaction={item} i={index} />
+          )}
           showsVerticalScrollIndicator={false}
           keyExtractor={(_, i) => i}
         />
@@ -118,6 +40,6 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default Transactions;
 
 const styles = StyleSheet.create({});

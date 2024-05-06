@@ -14,6 +14,8 @@ const COLORS = {
   light40: "#E3E5E5",
   light20: "#91919F",
 
+  dark100: "#0D0E0F",
+  dark75: "#161719",
   dark50: "#212325",
   dark25: "#292B2D",
 

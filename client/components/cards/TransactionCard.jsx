@@ -4,14 +4,16 @@ import dayjs from "dayjs";
 
 import { COLORS, SIZES } from "../../constants/theme";
 
-const TransactionCard = ({ transaction }) => {
+const TransactionCard = ({ transaction, i }) => {
   const { navigate } = useNavigation();
-  const { category, date, desc, amount } = transaction;
+  const { category, createdAt, desc, amount } = transaction;
 
   const shoppingImage = require("../../assets/images/shopping-bag.png");
   const foodImage = require("../../assets/images/restaurant.png");
   const billImage = require("../../assets/images/recurring-bill.png");
   const moneyImage = require("../../assets/images/salary.png");
+  const carImage = require("../../assets/images/car.png");
+  const miscImage = require("../../assets/images/misc.png");
 
   function getImage(category) {
     switch (category) {
@@ -23,8 +25,13 @@ const TransactionCard = ({ transaction }) => {
         return billImage;
       case "credit":
         return moneyImage;
+      case "miscellaneous":
+        return miscImage;
+      case "transportation":
+        return carImage;
     }
   }
+
   function getBg(category) {
     switch (category) {
       case "shopping":
@@ -35,12 +42,16 @@ const TransactionCard = ({ transaction }) => {
         return COLORS.purple20;
       case "credit":
         return COLORS.green20;
+      case "miscellaneous":
+        return COLORS.light40;
+      case "transportation":
+        return COLORS.blue500;
     }
   }
 
   return (
     <TouchableOpacity
-      style={styles.wrapper}
+      style={[styles.wrapper, i === 0 ? { marginTop: 20 } : ""]}
       onPress={() => navigate("transaction", { data: transaction })}
     >
       <View style={styles.imageContainer(getBg(category))}>
@@ -70,7 +81,7 @@ const TransactionCard = ({ transaction }) => {
             {desc}
           </Text>
           <Text style={{ fontFamily: "medium", color: COLORS.light20 }}>
-            {dayjs(date).format("DD MMM, YYYY")}
+            {dayjs(createdAt).format("DD MMM, YYYY")}
           </Text>
         </View>
       </View>
@@ -86,7 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 30,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   imageContainer: (bg) => ({
     backgroundColor: bg,

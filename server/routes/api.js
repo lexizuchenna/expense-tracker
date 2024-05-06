@@ -6,8 +6,10 @@ const {
   resendCode,
   loginUser,
   getCode,
-  addTransaction,
   getTransactions,
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
 } = require("../controllers/api");
 
 const { protectUser } = require("../middleware");
@@ -17,7 +19,11 @@ router.post("/verify-token", verifyCode);
 router.post("/resend-code", resendCode);
 router.post("/login", loginUser);
 router.get("/get-code", getCode);
-router.route("/transaction").post(protectUser, addTransaction);
 router.get("/transactions", protectUser, getTransactions);
+router
+  .route("/transaction")
+  .post(protectUser, addTransaction)
+  .patch(protectUser, updateTransaction)
+  .delete(protectUser, deleteTransaction);
 
 module.exports = router;
