@@ -1,0 +1,11 @@
+{
+  "err-snipet": {
+    "scope": "javascript,typescript",
+    "prefix": "err",
+    "body": [
+      "console.error('$1', error);",
+      "return res.status(${2:500}).json({ message: '${3:Internal server error}', status: ${2:500} });"
+    ],
+    "description": "Logs an error and returns an error response"
+  }
+}

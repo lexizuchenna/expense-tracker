@@ -21,9 +21,9 @@ import AuthHeader from "./components/headers/AuthHeader";
 
 import { useMainContext } from "./context/MainContext";
 
-const Main = () => {
+const Main = ({ getUser, getLogin }) => {
   const Stack = createNativeStackNavigator();
-  const { isLogin } = useMainContext();
+  const { isLogin, setUser, setIsLogin } = useMainContext();
 
   const doublePressInterval = 1000;
   const lastBackPressed = useRef(0);
@@ -64,6 +64,11 @@ const Main = () => {
 
     return () => backHandler.remove();
   }, [navigationState]);
+
+  useEffect(() => {
+    setUser(getUser);
+    setIsLogin(getLogin);
+  }, []);
 
   return (
     <Stack.Navigator>

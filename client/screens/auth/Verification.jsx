@@ -3,10 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   ToastAndroid,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 
 import { useMainContext } from "../../context/MainContext";
@@ -19,25 +18,27 @@ import CustomPinInput from "../../components/CustomPinInput";
 
 const Verification = () => {
   const navigation = useNavigation();
+  const { params } = useRoute();
 
-  const { url2 } = useMainContext();
+  const { user, token, t } = params.data;
+
+  const { url } = useMainContext();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [time, setTime] = useState(300000);
-  const [pin, setPin] = useState("");
+  const [time, setTime] = useState(t);
+  const [otp, setOtp] = useState(token);
 
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setTime((prev) => {
         if (prev > 0) return prev - 1000;
         else {
-          clearInterval(timeInterval); // Clear the interval when time reaches 0
+          clearInterval(timeInterval);
           return prev;
         }
       });
     }, 1000);
 
-    // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(timeInterval);
   }, [time]);
 
@@ -54,6 +55,64 @@ const Verification = () => {
     return formattedTime;
   };
 
+  async function handleComplete(pin) {
+    try {
+      setIsLoading(true);
+      const { data } = await url.post("/verify-token", {
+        tokenId: otp?._id,
+        token: pin,
+        id: user?._id,
+      });
+
+      ToastAndroid.show(data.message, ToastAndroid.SHORT);
+
+      if (data.status === 200) return navigation.navigate("login");
+    } catch (error) {
+      console.error("verification: ", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Internal server error";
+
+      return ToastAndroid.show(message, ToastAndroid.SHORT);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function resendCode() {
+    if (time !== 0) return;
+    try {
+      setIsLoading(true);
+      const { data } = await url.post("/resend-code", {
+        email: user.email,
+        id: user._id,
+      });
+
+      ToastAndroid.show(data.message, ToastAndroid.SHORT);
+
+      if (data.status === 201) {
+        const { token } = data.data;
+        setOtp(token);
+        setTime(300000);
+      }
+    } catch (error) {
+      console.error("verification: ", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Internal server error";
+
+      return ToastAndroid.show(message, ToastAndroid.SHORT);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <View style={gStyles.container(COLORS.light100)}>
       <View style={styles.textContainer}>
@@ -62,19 +121,20 @@ const Verification = () => {
         </Text>
       </View>
       <View style={{ marginHorizontal: 20, marginVertical: 47 }}>
-        <CustomPinInput pinLength={6} onComplete={(p) => setPin(p)} />
+        <CustomPinInput
+          pinLength={6}
+          onComplete={(pin) => handleComplete(pin)}
+        />
       </View>
       <View style={[styles.textContainer, { marginTop: 0 }]}>
         <Text style={[styles.text, { fontSize: 16, fontFamily: "medium" }]}>
           We sent a verification code to your email{" "}
-          <Text style={{ color: COLORS.blue100 }}>
-            brajaoma*****@gmail.com.
-          </Text>{" "}
-          You can check your inbox.
+          <Text style={{ color: COLORS.blue100 }}>{user.email}.</Text> You can
+          check your inbox.
         </Text>
       </View>
       <View style={[styles.textContainer, { marginTop: 30 }]}>
-        <TouchableOpacity onPress={() => setTime(() => 300000)}>
+        <TouchableOpacity onPress={resendCode}>
           <Text
             style={[
               styles.text,

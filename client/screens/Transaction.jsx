@@ -10,12 +10,13 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
+
+import DeleteAction from "../components/DeleteAction";
 
 import { COLORS } from "../constants/theme";
 import gStyles from "../styles/styles";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import DeleteAction from "../components/DeleteAction";
 
 const Transaction = () => {
   const [isDelete, setIsDelete] = useState(false);

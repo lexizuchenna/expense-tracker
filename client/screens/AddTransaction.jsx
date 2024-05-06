@@ -27,13 +27,12 @@ import { Ionicons } from "@expo/vector-icons";
 const AddTransaction = () => {
   const inputRef = useRef();
   const navigation = useNavigation();
-  const { url } = useMainContext();
+  const { url, trxs, setTrxs } = useMainContext();
   const { params } = useRoute();
 
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const [value, setValue] = useState(null);
   const [items, setItems] = useState([
     { label: "Shopping", value: "shopping" },
     { label: "Subscription", value: "subscription" },
@@ -50,6 +49,35 @@ const AddTransaction = () => {
   useEffect(() => {
     inputRef.current.focus();
   }, []);
+
+  async function handleAddTransaction() {
+    try {
+      if (Object.values(formData).includes(""))
+        return ToastAndroid.show("Enter all fields", ToastAndroid.SHORT);
+
+      setIsLoading(true);
+
+      const { data } = await url.post("/transaction", formData);
+
+      const transactions = trxs;
+
+      transactions.push(data.transaction);
+
+      console.log(transactions);
+
+      setTrxs(transactions);
+    } catch (error) {
+      // console.error("add-transaction: ", JSON.stringify(error));
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Internal server error";
+      return ToastAndroid.show(message, ToastAndroid.SHORT);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const bg = params.type === "income" ? COLORS.green100 : COLORS.red100;
 
@@ -76,9 +104,7 @@ const AddTransaction = () => {
           placeholderTextColor={COLORS.light80}
           autoComplete="off"
           value={formData.amount}
-          onChangeText={(amount) =>
-            setFormData((prev) => ({ ...prev, amount }))
-          }
+          onChangeText={(amount) => setFormData((p) => ({ ...p, amount }))}
         />
       </View>
 
@@ -86,10 +112,12 @@ const AddTransaction = () => {
         {params.type === "expense" && (
           <DropDownPicker
             open={open}
-            value={value}
+            value={formData.category}
             items={items}
             setOpen={setOpen}
-            setValue={setValue}
+            setValue={(item) =>
+              setFormData((p) => ({ ...p, category: item() }))
+            }
             setItems={setItems}
             style={{
               borderColor: COLORS.light40,
@@ -110,6 +138,8 @@ const AddTransaction = () => {
           placeholder="Description"
           style={gStyles.input}
           placeholderTextColor={COLORS.light20}
+          value={formData.desc}
+          onChangeText={(desc) => setFormData((p) => ({ ...p, desc }))}
         />
         <TouchableOpacity
           style={{
@@ -129,7 +159,10 @@ const AddTransaction = () => {
           <Ionicons name="calendar" size={20} color={COLORS.light20} />
         </TouchableOpacity>
         <View style={styles.btnContainer}>
-          <TouchableOpacity style={gStyles.btn()} onPress={() => {}}>
+          <TouchableOpacity
+            style={gStyles.btn()}
+            onPress={handleAddTransaction}
+          >
             <Text style={gStyles.btnText()}>Add</Text>
           </TouchableOpacity>
         </View>

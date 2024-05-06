@@ -19,7 +19,7 @@ import gStyles from "../../styles/styles";
 
 const SignUp = () => {
   const navigation = useNavigation();
-  const { url1 } = useMainContext();
+  const { url } = useMainContext();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,19 +30,28 @@ const SignUp = () => {
   const [isCheck, setIsCheck] = useState(false);
 
   const handleRegister = async () => {
-    if (Object.values(formData).includes("")) {
-      return ToastAndroid.show("Input all fields", ToastAndroid.SHORT);
-    }
+    if (Object.values(formData).includes(""))
+      return ToastAndroid.show("Enter all fields", ToastAndroid.SHORT);
+
+    if (!isCheck)
+      return ToastAndroid.show(
+        "You must agree to the terms",
+        ToastAndroid.SHORT
+      );
+
     try {
       setIsLoading(true);
-      const { data } = await url1.post("/accounts/register", formData);
+      const { data } = await url.post("/signup", formData);
 
       if (data.status === 201) {
+        const { token, user } = data;
         ToastAndroid.show(data.message, ToastAndroid.SHORT);
-        return navigation.navigate("login");
+        return navigation.navigate("verification", {
+          data: { user, token, t: 300000 },
+        });
       }
     } catch (error) {
-      console.log("register: ", error);
+      console.log("signup: ", error);
       const message =
         error?.response?.data?.message ||
         error?.response?.data ||
@@ -63,6 +72,8 @@ const SignUp = () => {
             placeholder="Name"
             style={gStyles.input}
             placeholderTextColor={COLORS.light20}
+            value={formData.name}
+            onChangeText={(name) => setFormData((prev) => ({ ...prev, name }))}
           />
           <TextInput
             placeholder="Email"
@@ -70,6 +81,8 @@ const SignUp = () => {
             placeholderTextColor={COLORS.light20}
             keyboardType="email-address"
             autoCapitalize="none"
+            value={formData.email}
+            onChangeText={(email) => setFormData((p) => ({ ...p, email }))}
           />
           <View style={gStyles.inputWrapper}>
             <TextInput
@@ -78,6 +91,10 @@ const SignUp = () => {
               placeholderTextColor={COLORS.light20}
               secureTextEntry={!showPwd}
               keyboardType={!showPwd ? "default" : "visible-password"}
+              value={formData.password}
+              onChangeText={(password) =>
+                setFormData((prev) => ({ ...prev, password }))
+              }
             />
             <TouchableOpacity
               style={gStyles.inputIcon}
@@ -117,10 +134,7 @@ const SignUp = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.btnContainer}>
-          <TouchableOpacity
-            style={gStyles.btn()}
-            onPress={() => navigation.navigate("create-pin")}
-          >
+          <TouchableOpacity style={gStyles.btn()} onPress={handleRegister}>
             <Text style={gStyles.btnText()}>Sign Up</Text>
           </TouchableOpacity>
         </View>

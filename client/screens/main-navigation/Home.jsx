@@ -11,8 +11,9 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LineChart } from "react-native-chart-kit";
+import { PieChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
 
 import Loader from "../../components/Loader";
 
@@ -29,58 +30,41 @@ const Home = () => {
   const topHeight =
     Platform.OS === "android" ? StatusBar.currentHeight : insets;
 
-  const { url, isAction } = useMainContext();
+  const { url, isAction, user, trxs } = useMainContext();
 
-  const transactions = [
+  const [income, setIncome] = useState(0);
+  const [expense, setExpense] = useState(0);
+
+  const data = [
     {
-      category: "shopping",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2003-02-20",
+      name: "Income",
+      spend: income,
+      color: COLORS.green80,
     },
     {
-      category: "food",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2024-02-12",
-    },
-    {
-      category: "subscription",
-      desc: "MTN Subscription",
-      amount: "1000",
-      date: "2033-02-12",
-    },
-    {
-      category: "credit",
-      desc: "Salary for Dec",
-      amount: "1000",
-      date: "2023-02-14",
-    },
-    {
-      category: "shopping",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2003-02-20",
-    },
-    {
-      category: "food",
-      desc: "Bought her a bag",
-      amount: "1000",
-      date: "2024-02-12",
-    },
-    {
-      category: "subscription",
-      desc: "MTN Subscription",
-      amount: "1000",
-      date: "2033-02-12",
-    },
-    {
-      category: "credit",
-      desc: "Salary for Dec",
-      amount: "1000",
-      date: "2023-02-14",
+      name: "Expense",
+      spend: expense,
+      color: COLORS.red60,
     },
   ];
+
+  useEffect(() => {
+    const totalIn = trxs.reduce((acc, trx) => {
+      const { category, amount } = trx;
+
+      if (category === "credit") return acc + amount;
+      else return acc;
+    }, 0);
+    const totalEx = trxs.reduce((acc, trx) => {
+      const { category, amount } = trx;
+
+      if (category !== "credit") return acc + amount;
+      else return acc;
+    }, 0);
+
+    setIncome(totalIn);
+    setExpense(totalEx);
+  }, [trxs]);
 
   return (
     <View style={gStyles.container()}>
@@ -95,6 +79,30 @@ const Home = () => {
         }}
       >
         <View style={styles.header(topHeight)}>
+          <View>
+            <Text
+              style={{
+                fontFamily: "semi-bold",
+                fontSize: 30,
+                color: COLORS.light20,
+              }}
+            >
+              Hello,
+            </Text>
+            <Text
+              style={{
+                fontFamily: "bold",
+                fontSize: 30,
+                color: COLORS.blue100,
+              }}
+            >
+              {user?.name?.split(" ")[0]}
+            </Text>
+          </View>
+
+          {/* <TouchableOpacity>
+            <AntDesign size={30} name="logout" color={COLORS.blue100} />
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={{
               borderColor: COLORS.blue100,
@@ -107,18 +115,15 @@ const Home = () => {
               style={styles.userIcon}
             />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <AntDesign size={30} name="logout" color={COLORS.blue100} />
-          </TouchableOpacity>
         </View>
-        <View style={{ alignItems: "center" }}>
+        {/* <View style={{ alignItems: "center" }}>
           <Text style={{ fontFamily: "semi-bold", color: COLORS.light20 }}>
             Account Balance
           </Text>
           <Text style={{ fontFamily: "semi-bold", fontSize: 40 }}>
             ₦9,400,000
           </Text>
-        </View>
+        </View> */}
         <View style={styles.moneyWrapper}>
           <View
             style={[
@@ -131,7 +136,7 @@ const Home = () => {
             <Text style={{ fontFamily: "semi-bold", color: COLORS.light100 }}>
               Income
             </Text>
-            <Text style={styles.moneyText}>₦1,000,000</Text>
+            <Text style={styles.moneyText}>₦{income.toLocaleString()}</Text>
           </View>
           <View
             style={[
@@ -144,60 +149,56 @@ const Home = () => {
             <Text style={{ fontFamily: "semi-bold", color: COLORS.light100 }}>
               Expenses
             </Text>
-            <Text style={styles.moneyText}>₦1,000,000</Text>
+            <Text style={styles.moneyText}>₦{expense.toLocaleString()}</Text>
           </View>
         </View>
       </LinearGradient>
-      <View style={{ marginTop: 15 }}>
+      <View style={{ minHeight: 220 }}>
         <Text
-          style={{ marginHorizontal: 20, fontFamily: "bold", fontSize: 20 }}
-        >
-          Spend Frequency
-        </Text>
-        <LineChart
-          data={{
-            datasets: [
-              {
-                data: [
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                ],
-              },
-            ],
-          }}
-          width={SIZES.width}
-          height={250}
-          withInnerLines={false}
-          withOuterLines={false}
-          withDots={false}
-          chartConfig={{
-            backgroundGradientFrom: COLORS.light100,
-            backgroundGradientTo: COLORS.light100,
-            decimalPlaces: 2,
-            color: () => `rgba(0, 119, 255, 0.6)`,
-            strokeWidth: "6",
-          }}
-          bezier
           style={{
-            marginVertical: 8,
-            padding: 0,
-            paddingBottom: -35,
-            backgroundColor: COLORS.light100,
+            marginHorizontal: 20,
+            fontFamily: "bold",
+            fontSize: 20,
+            zIndex: 1,
           }}
-          formatYLabel={() => ""}
-        />
+        >
+          Income/Expense Chart
+        </Text>
+        {income !== 0 || expense !== 0 ? (
+          <PieChart
+            data={data}
+            width={SIZES.width}
+            height={220}
+            accessor={"spend"}
+            backgroundColor={"transparent"}
+            center={[SIZES.width / 4, 0]}
+            chartConfig={{
+              color: () => `rgba(0, 0, 0, 1)`,
+            }}
+            style={{ marginTop: -15 }}
+            hasLegend={false}
+          />
+        ) : (
+          <View
+            style={{
+              height: 220,
+              marginHorizontal: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontFamily: "semi-bold", fontSize: 20 }}>
+              No data available
+            </Text>
+          </View>
+        )}
       </View>
       <View
         style={{
           flex: 1,
           marginHorizontal: 20,
           marginBottom: 120,
-          marginTop: -10,
+          marginTop: -5,
         }}
       >
         <View
@@ -230,12 +231,28 @@ const Home = () => {
           </TouchableOpacity>
         </View>
         <View>
-          <FlatList
-            data={transactions}
-            renderItem={({ item }) => <TransactionCard transaction={item} />}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(_, i) => i}
-          />
+          {/* {console.log("tt", trxs)} */}
+          {trxs.length > 0 ? (
+            <FlatList
+              data={trxs}
+              renderItem={({ item }) => <TransactionCard transaction={item} />}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(_, i) => i}
+            />
+          ) : (
+            <View
+              style={{
+                minHeight: 220,
+                marginHorizontal: 20,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontFamily: "semi-bold", fontSize: 20 }}>
+                No data available
+              </Text>
+            </View>
+          )}
         </View>
       </View>
       <Loader />

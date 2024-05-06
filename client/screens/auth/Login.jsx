@@ -22,7 +22,7 @@ import Loader from "../../components/Loader";
 const Login = () => {
   const navigation = useNavigation();
 
-  const { url1, setUser, setIsLogin } = useMainContext();
+  const { url, setUser, setIsLogin } = useMainContext();
 
   const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,16 +84,30 @@ const Login = () => {
 
   const handleLogin = async () => {
     if (Object.values(formData).includes("")) {
-      return ToastAndroid.show("Input all fields", ToastAndroid.SHORT);
+      return ToastAndroid.show("Enter all fields", ToastAndroid.SHORT);
     }
     try {
       setIsLoading(true);
-      const { data } = await url1.post("/accounts/login", formData);
+      const { data } = await url.post("/login", formData);
+
+      ToastAndroid.show(data.message, ToastAndroid.SHORT);
+
+      if (data.status === 403) {
+        if (data.message === "Account not verified") {
+          const { data } = await url.get(`/get-code?email=${formData.email}`);
+          const { token, user } = data;
+
+          return navigation.navigate("verification", {
+            data: { user, token, t: 0 },
+          });
+        }
+        return ToastAndroid.show(data.message, ToastAndroid.SHORT);
+      }
 
       if (data.status === 200) {
-        await SecureStore.setItemAsync("user", JSON.stringify(formData));
+        const { user } = data;
+        await SecureStore.setItemAsync("user", JSON.stringify(user));
         setUser(data.user);
-
         setIsLogin(true);
       }
     } catch (error) {
@@ -146,6 +160,8 @@ const Login = () => {
             placeholderTextColor={COLORS.light20}
             keyboardType="email-address"
             autoCapitalize="none"
+            value={formData.email}
+            onChangeText={(email) => setFormData((p) => ({ ...p, email }))}
           />
           <View style={gStyles.inputWrapper}>
             <TextInput
@@ -154,6 +170,10 @@ const Login = () => {
               placeholderTextColor={COLORS.light20}
               secureTextEntry={!showPwd}
               keyboardType={!showPwd ? "default" : "visible-password"}
+              value={formData.password}
+              onChangeText={(password) =>
+                setFormData((p) => ({ ...p, password }))
+              }
             />
             <TouchableOpacity
               style={gStyles.inputIcon}
@@ -169,7 +189,7 @@ const Login = () => {
         </View>
 
         <View style={styles.btnContainer}>
-          <TouchableOpacity style={gStyles.btn()} onPress={() => {}}>
+          <TouchableOpacity style={gStyles.btn()} onPress={handleLogin}>
             <Text style={gStyles.btnText()}>Login</Text>
           </TouchableOpacity>
         </View>

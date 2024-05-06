@@ -1,5 +1,6 @@
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import * as SecureStore from "expo-secure-store";
 import { useState, useEffect } from "react";
 import {
   Inter_400Regular,
@@ -10,12 +11,14 @@ import {
 } from "@expo-google-fonts/inter";
 
 import { MainContext } from "./context/MainContext";
-import { COLORS } from "./constants/theme";
 import Main from "./Main";
 import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
-  const [isAppReady, setIsAppReady] = useState(false);
+  const [isFontReady, setIsFontReady] = useState(false);
+  const [isUserReady, setIsUserReady] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLogin, setIsLogin] = useState(false);
 
   SplashScreen.preventAutoHideAsync();
 
@@ -30,24 +33,37 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        if (fontsLoaded) {
-          setIsAppReady(true);
+        // Check if both fonts and user data are loaded
+        if (fontsLoaded && isUserReady) {
           await SplashScreen.hideAsync();
         }
+
+        if (fontsLoaded) {
+          setIsFontReady(true);
+        }
+
+        const user = await SecureStore.getItemAsync("user");
+        if (user) {
+          setUser(JSON.parse(user));
+          setIsLogin(true);
+        }
+
+        // Set user readiness flag
+        setIsUserReady(true);
       } catch (e) {
         console.warn(e);
       }
     }
 
     prepare();
-  }, [fontsLoaded]);
+  }, [fontsLoaded, isUserReady]);
 
-  if (!isAppReady) return null;
+  if (!isFontReady || !isFontReady) return null;
 
   return (
     <MainContext>
       <NavigationContainer>
-        <Main />
+        <Main getLogin={isLogin} getUser={user} />
       </NavigationContainer>
     </MainContext>
   );

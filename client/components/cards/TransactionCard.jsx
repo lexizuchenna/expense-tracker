@@ -2,7 +2,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import dayjs from "dayjs";
 
-import { COLORS } from "../../constants/theme";
+import { COLORS, SIZES } from "../../constants/theme";
 
 const TransactionCard = ({ transaction }) => {
   const { navigate } = useNavigation();
@@ -58,7 +58,15 @@ const TransactionCard = ({ transaction }) => {
           </Text>
         </View>
         <View style={styles.textChild}>
-          <Text style={{ fontFamily: "medium", color: COLORS.light20 }}>
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{
+              fontFamily: "medium",
+              color: COLORS.light20,
+              width: SIZES.width / 3,
+            }}
+          >
             {desc}
           </Text>
           <Text style={{ fontFamily: "medium", color: COLORS.light20 }}>

@@ -25,11 +25,14 @@ const CustomPinInput = ({ pinLength, onComplete }) => {
 
   const handleBackspace = (index) => {
     const newPin = [...pin];
+    const newPin2 = [...pin];
     newPin[index] = "";
-    setPin(newPin);
 
-    if (index > 0) {
-      inputRefs.current[index - 1].focus();
+    setPin(newPin);
+    if (newPin2[index] === "") {
+      if (index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
     }
   };
 
@@ -48,7 +51,6 @@ const CustomPinInput = ({ pinLength, onComplete }) => {
             handleBackspace(index);
           }
         }}
-        caretHidden
       />
     ));
   };

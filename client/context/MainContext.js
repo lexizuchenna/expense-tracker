@@ -21,34 +21,38 @@ export const MainContext = ({ children }) => {
   }
 
   const url = axios.create({
-    baseURL: "https://192.168.0.166:3200/api",
+    baseURL: "http://192.168.0.166:3200/api",
     timeout: 60000,
     timeoutErrorMessage: "Request timed out, try again later",
   });
   url.interceptors.request.use((req) => {
-    req.headers.Authorization = user?.id;
+    req.headers.Authorization = user?._id;
+    req.headers.Accept = "application/json";
     req.signal = newAbortSignal(60000);
     return req;
   });
 
-  const getUser = async () => {
+  async function getTransactions() {
     try {
-      setIsLoading(true);
-      const { data } = await url.get("/mobile/get-user");
+      const { data } = await url.get("/transactions");
 
-      if (data.status === 200) return setUser((prev) => data.user);
+      if (data.status === 200) setTrxs(data.transactions);
     } catch (error) {
-      console.log("get-user: ", error);
+      console.error("get-transactions: ", error);
       const message =
         error?.response?.data?.message ||
         error?.response?.data ||
-        "Error getting user";
-
+        error?.message ||
+        "Internal server error";
       return ToastAndroid.show(message, ToastAndroid.SHORT);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (user) {
+      getTransactions();
+    }
+  }, [user]);
 
   return (
     <Context.Provider
@@ -62,6 +66,7 @@ export const MainContext = ({ children }) => {
         trxs,
         setTrxs,
         isLoading,
+        triggerUser,
         setTriggerUser,
 
         url,
