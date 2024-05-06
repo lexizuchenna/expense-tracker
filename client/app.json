@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#111517"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
@@ -35,6 +37,12 @@
           "faceIDPermission": "Allow Trakr to use Face ID."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9e3a87d1-55ab-4f9b-8608-38bc66c11c33"
+      }
+    },
+    "owner": "lextechspec"
   }
 }

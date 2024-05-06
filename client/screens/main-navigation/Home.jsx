@@ -8,7 +8,6 @@ import {
   Platform,
   Image,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PieChart } from "react-native-chart-kit";
@@ -30,8 +29,7 @@ const Home = () => {
   const topHeight =
     Platform.OS === "android" ? StatusBar.currentHeight : insets;
 
-  const { url, isAction, user, trxs, triggerTrx, setTriggerTrx } =
-    useMainContext();
+  const { isAction, user, trxs, triggerTrx } = useMainContext();
 
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
@@ -107,6 +105,7 @@ const Home = () => {
               borderWidth: 1,
               borderRadius: 20,
             }}
+            onPress={() => navigation.navigate("profile")}
           >
             <Image
               source={require("../../assets/images/user.png")}
