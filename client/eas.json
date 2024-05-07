@@ -13,6 +13,9 @@
         "distribution": "internal",
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://expense-tracker-88me.onrender.com/api"
       }
     },
     "production": {}
