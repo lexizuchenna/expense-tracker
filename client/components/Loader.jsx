@@ -39,6 +39,7 @@ const Loader = ({ visible }) => {
         style={{
           width: 60,
           height: 60,
+          borderRadius: 10,
           transform: [{ scale: scaleValue }],
         }}
       />

@@ -66,7 +66,7 @@ const Home = () => {
 
   return (
     <View style={gStyles.container()}>
-      <StatusBar backgroundColor="#fff6e5" barStyle="dark-content" />
+      <StatusBar backgroundColor={"#fff6e5"} barStyle="dark-content" />
       <LinearGradient
         colors={["#fff6e5", "rgba(248, 237, 216, 0.3)"]}
         style={styles.gradient}
