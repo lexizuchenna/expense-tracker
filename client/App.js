@@ -33,7 +33,6 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Check if both fonts and user data are loaded
         if (fontsLoaded && isUserReady) {
           await SplashScreen.hideAsync();
         }
@@ -43,12 +42,12 @@ export default function App() {
         }
 
         const user = await SecureStore.getItemAsync("user");
+
         if (user) {
           setUser(JSON.parse(user));
           setIsLogin(true);
         }
 
-        // Set user readiness flag
         setIsUserReady(true);
       } catch (e) {
         console.warn(e);
@@ -58,7 +57,7 @@ export default function App() {
     prepare();
   }, [fontsLoaded, isUserReady]);
 
-  if (!isFontReady || !isFontReady) return null;
+  if (!isFontReady || !isUserReady) return null;
 
   return (
     <MainContext>

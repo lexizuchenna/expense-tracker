@@ -8,13 +8,12 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 
-import { useMainContext } from "../../context/MainContext";
-
-import { COLORS } from "../../constants/theme";
-import gStyles from "../../styles/styles";
-
 import Loader from "../../components/Loader";
 import CustomPinInput from "../../components/CustomPinInput";
+
+import { useMainContext } from "../../context/MainContext";
+import { COLORS } from "../../constants/theme";
+import gStyles from "../../styles/styles";
 
 const Verification = () => {
   const navigation = useNavigation();
@@ -183,6 +182,5 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "semi-bold",
     fontSize: 24,
-    // color: COLORS.light20,
   },
 });

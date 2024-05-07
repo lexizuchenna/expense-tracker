@@ -1,9 +1,25 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { COLORS, SIZES } from "../constants/theme";
+import { useEffect, useRef } from "react";
 
-const DeleteAction = ({ visible, onDelete, onCancel }) => {
+const PopAction = ({ visible, onComplete, onCancel, headText, bodyText }) => {
   if (!visible) return null;
+
+  const translateYValue = useRef(new Animated.Value(100)).current;
+
+  useEffect(() => {
+    Animated.spring(translateYValue, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const btn = [
     {
@@ -20,26 +36,25 @@ const DeleteAction = ({ visible, onDelete, onCancel }) => {
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.card}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            transform: [{ translateY: translateYValue }],
+          },
+        ]}
+      >
         <View style={styles.line}></View>
-        <Text style={styles.cardText}>Delete this transaction?</Text>
+        <Text style={styles.cardText}>{headText}</Text>
         <Text style={[styles.cardText, { color: COLORS.light20 }]}>
-          Are you sure you want to{" "}
-          <Text style={{ color: COLORS.red100 }}>delete</Text> this transaction?
+          {bodyText}
         </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginVertical: 20,
-            width: SIZES.width - 40,
-          }}
-        >
+        <View style={styles.btnContainer}>
           {btn.map((b) => (
             <TouchableOpacity
               style={styles.btn(b.bg)}
               key={b.text}
-              onPress={b.text === "Yes" ? onDelete : onCancel}
+              onPress={b.text === "Yes" ? onComplete : onCancel}
             >
               <Text
                 style={{
@@ -53,12 +68,12 @@ const DeleteAction = ({ visible, onDelete, onCancel }) => {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 };
 
-export default DeleteAction;
+export default PopAction;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -101,5 +116,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 15,
     textAlign: "center",
+  },
+  btnContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 20,
+    width: SIZES.width - 40,
   },
 });

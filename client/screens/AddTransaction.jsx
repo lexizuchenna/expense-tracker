@@ -15,7 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 
 import Loader from "../components/Loader";
-import AuthHeader from "../components/headers/AuthHeader";
+import Header from "../components/headers/Header";
 
 import { useMainContext } from "../context/MainContext";
 import { COLORS, SIZES } from "../constants/theme";
@@ -127,7 +127,7 @@ const AddTransaction = () => {
   return (
     <View style={gStyles.container(bg)}>
       <StatusBar backgroundColor={bg} />
-      <AuthHeader text="Income" color={COLORS.light100} bg={bg} />
+      <Header text="Income" color={COLORS.light100} bg={bg} />
       <View style={styles.inputContainer}>
         <Text
           style={{

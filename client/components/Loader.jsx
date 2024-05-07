@@ -1,12 +1,47 @@
-import React from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { useEffect, useRef } from "react";
+import { View, StyleSheet, Animated } from "react-native";
 
 const Loader = ({ visible }) => {
   if (!visible) return null;
 
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const growAnimation = Animated.timing(scaleValue, {
+      toValue: 1.5,
+      duration: 500,
+      useNativeDriver: true,
+    });
+
+    const shrinkAnimation = Animated.timing(scaleValue, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    });
+
+    const loopAnimation = Animated.sequence([growAnimation, shrinkAnimation]);
+
+    const loop = () => {
+      Animated.loop(loopAnimation).start();
+    };
+
+    loop();
+
+    return () => {
+      scaleValue.stopAnimation();
+    };
+  }, []);
+
   return (
     <View style={styles.overlay}>
-      <ActivityIndicator size="large" color="#fff" />
+      <Animated.Image
+        source={require("../assets/icon.png")}
+        style={{
+          width: 60,
+          height: 60,
+          transform: [{ scale: scaleValue }],
+        }}
+      />
     </View>
   );
 };

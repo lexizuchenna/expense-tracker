@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { View, TextInput, StyleSheet, Keyboard } from "react-native";
+
 import { COLORS } from "../constants/theme";
 
 const CustomPinInput = ({ pinLength, onComplete }) => {
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
   input: {
     width: 35,
     height: 35,
-    borderRadius: 20, // round the input
+    borderRadius: 20,
     textAlign: "center",
     fontSize: 20,
     color: COLORS.light100,

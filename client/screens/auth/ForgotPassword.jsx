@@ -4,10 +4,9 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { useMainContext } from "../../context/MainContext";
 
@@ -19,7 +18,7 @@ import Loader from "../../components/Loader";
 const ForgotPassword = () => {
   const navigation = useNavigation();
 
-  const { url2 } = useMainContext();
+  const { url } = useMainContext();
 
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "" });
@@ -41,6 +40,8 @@ const ForgotPassword = () => {
           placeholderTextColor={COLORS.light20}
           keyboardType="email-address"
           autoCapitalize="none"
+          value={formData.email}
+          onChangeText={(email) => setFormData({ email })}
         />
       </View>
 
@@ -76,6 +77,5 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "semi-bold",
     fontSize: 24,
-    // color: COLORS.light20,
   },
 });

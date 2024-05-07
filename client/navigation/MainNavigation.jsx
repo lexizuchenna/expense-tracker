@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { TouchableOpacity, View } from "react-native";
-import { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import Home from "../screens/main-navigation/Home";
 import Transactions from "../screens/main-navigation/Transactions";
@@ -12,7 +11,7 @@ import { COLORS } from "../constants/theme";
 const Tab = createBottomTabNavigator();
 
 const Action = () => {
-  return <View></View>;
+  return <View />;
 };
 
 export default function App() {
@@ -20,30 +19,14 @@ export default function App() {
 
   const handleTabPress = ({ route, navigation }) => {
     if (route.name === "action") {
-      setIsAction((prev) => !prev);
-      return;
+      return setIsAction((prev) => !prev);
     }
 
     navigation.navigate(route.name);
   };
 
   const tabBar = ({ state, descriptors, navigation }) => (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
-        paddingHorizontal: 20,
-        paddingBottom: 10,
-        position: "absolute",
-        right: 0,
-        left: 0,
-        bottom: 0,
-        backgroundColor: COLORS.light60,
-        borderTopRightRadius: 20,
-        borderTopLeftRadius: 20,
-      }}
-    >
+    <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -56,29 +39,10 @@ export default function App() {
         const Icon = options.tabBarIcon(focused);
 
         return label === "action" ? (
-          <View
-            key={route.key}
-            style={{
-              backgroundColor: COLORS.light100,
-              height: 95,
-              width: 95,
-              marginBottom: 10,
-              marginTop: -35,
-              borderRadius: 100,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <View key={route.key} style={styles.action(isAction)}>
             <TouchableOpacity
               onPress={() => handleTabPress({ route, navigation, focused })}
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                height: 70,
-                width: 70,
-                backgroundColor: COLORS.blue100,
-                borderRadius: 100,
-              }}
+              style={styles.actionBtn}
             >
               {Icon}
             </TouchableOpacity>
@@ -161,3 +125,39 @@ export default function App() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    position: "absolute",
+    right: 0,
+    left: 0,
+    bottom: 0,
+    backgroundColor: COLORS.light60,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  action: (action) => ({
+    backgroundColor: action ? "rgba(0, 119, 255, 0.72)" : COLORS.light100,
+    height: 50,
+    width: 100,
+    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+  }),
+  actionBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 70,
+    width: 70,
+    backgroundColor: COLORS.blue100,
+    borderRadius: 100,
+    marginTop: -45,
+  },
+});

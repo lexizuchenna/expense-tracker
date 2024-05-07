@@ -6,7 +6,7 @@ const Pagination = ({ items, currentIndex }) => {
   return (
     <View style={styles.paginationDots}>
       {items.map((_, index) => (
-        <View key={index} style={[styles.dot(index, currentIndex)]} />
+        <View key={index + 1} style={[styles.dot(index, currentIndex)]} />
       ))}
     </View>
   );

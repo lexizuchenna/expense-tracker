@@ -15,13 +15,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 
 import Loader from "../../components/Loader";
-
-import { useMainContext } from "../../context/MainContext";
-
-import { COLORS, SIZES } from "../../constants/theme";
-import gStyles from "../../styles/styles";
 import TransactionCard from "../../components/cards/TransactionCard";
 import Action from "../../components/Action";
+
+import { useMainContext } from "../../context/MainContext";
+import { COLORS, SIZES } from "../../constants/theme";
+import gStyles from "../../styles/styles";
 
 const Home = () => {
   const navigation = useNavigation();
@@ -70,12 +69,7 @@ const Home = () => {
       <StatusBar backgroundColor="#fff6e5" barStyle="dark-content" />
       <LinearGradient
         colors={["#fff6e5", "rgba(248, 237, 216, 0.3)"]}
-        style={{
-          zIndex: 30,
-          borderBottomRightRadius: 25,
-          borderBottomLeftRadius: 25,
-          paddingBottom: 20,
-        }}
+        style={styles.gradient}
       >
         <View style={styles.header(topHeight)}>
           <View>
@@ -343,4 +337,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 10,
   }),
+  gradient: {
+    zIndex: 30,
+    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 25,
+    paddingBottom: 20,
+  },
 });

@@ -1,5 +1,4 @@
 import * as SecureStore from "expo-secure-store";
-import * as LocalAuthentication from "expo-local-authentication";
 import {
   StyleSheet,
   View,
@@ -15,7 +14,7 @@ import { useState, useEffect } from "react";
 
 import gStyles from "../../styles/styles";
 import { useMainContext } from "../../context/MainContext";
-import { SIZES, COLORS } from "../../constants/theme";
+import { COLORS } from "../../constants/theme";
 
 import Loader from "../../components/Loader";
 
@@ -24,7 +23,6 @@ const Login = () => {
 
   const { url, setUser, setIsLogin } = useMainContext();
 
-  const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,57 +30,7 @@ const Login = () => {
     password: "",
   });
 
-  const authenticateBiometrics = async () => {
-    if (!isAvailable)
-      return ToastAndroid.show("Biometrics not available", ToastAndroid.SHORT);
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Verify",
-    });
-
-    if (result.success) {
-      try {
-        setIsLoading(true);
-        const credentials = await SecureStore.getItemAsync("user");
-        if (!credentials)
-          return ToastAndroid.show(
-            "Login first to save credentials",
-            ToastAndroid.SHORT
-          );
-
-        const { data } = await url1.post(
-          "/accounts/login",
-          JSON.parse(credentials)
-        );
-
-        if (data.status === 200) {
-          setUser(data.user);
-
-          setIsLogin(true);
-          return navigate.navigate("main-navigation");
-        }
-      } catch (error) {
-        console.log(": ", error);
-        const message =
-          error?.response?.data?.message ||
-          error?.response?.data ||
-          error?.message ||
-          "Internal server error";
-
-        if (message === "Password incorrect") {
-          return ToastAndroid.show("Login with password", ToastAndroid.SHORT);
-        }
-
-        console.log(error);
-        console.log(message);
-
-        return ToastAndroid.show(message, ToastAndroid.SHORT);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleLogin = async () => {
+  async function handleLogin() {
     if (Object.values(formData).includes("")) {
       return ToastAndroid.show("Enter all fields", ToastAndroid.SHORT);
     }
@@ -106,6 +54,8 @@ const Login = () => {
 
       if (data.status === 200) {
         const { user } = data;
+        user.isBiometrics = false;
+        user.passCode = null;
         await SecureStore.setItemAsync("user", JSON.stringify(user));
         setUser(data.user);
         setIsLogin(true);
@@ -123,10 +73,10 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
-    const getCredentials = async () => {
+    (async () => {
       const user = await SecureStore.getItemAsync("user");
 
       if (!user) return;
@@ -134,20 +84,7 @@ const Login = () => {
       const { email } = JSON.parse(user);
 
       setFormData((prev) => ({ ...prev, email }));
-    };
-    const checkBiometrics = async () => {
-      const compatible = await LocalAuthentication.hasHardwareAsync();
-
-      const biometryType =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
-
-      if (compatible && biometryType.length > 0) {
-        setIsAvailable(true);
-      }
-    };
-
-    getCredentials();
-    checkBiometrics();
+    })();
   }, []);
 
   return (

@@ -14,7 +14,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 
-import DeleteAction from "../components/DeleteAction";
+import PopAction from "../components/PopAction";
 import Loader from "../components/Loader";
 
 import { useMainContext } from "../context/MainContext";
@@ -78,6 +78,15 @@ const Transaction = () => {
   function onCancel() {
     setIsDelete(() => false);
   }
+
+  const BodyText = () => {
+    return (
+      <>
+        Are you sure you want to{" "}
+        <Text style={{ color: COLORS.red100 }}>delete</Text> this transaction?
+      </>
+    );
+  };
 
   return (
     <View style={gStyles.container()}>
@@ -179,10 +188,12 @@ const Transaction = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <DeleteAction
+      <PopAction
         visible={isDelete}
         onCancel={onCancel}
-        onDelete={onDelete}
+        onComplete={onDelete}
+        headText="Delete this transaction?"
+        bodyText={<BodyText />}
       />
       <Loader visible={isLoading} />
     </View>

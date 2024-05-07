@@ -1,67 +1,150 @@
+import * as LocalAuthentication from "expo-local-authentication";
+import * as SecureStore from "expo-secure-store";
 import {
   StatusBar,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 import CustomPinInput2 from "../../components/CustomPinInput2";
+import PopAction from "../../components/PopAction";
 
-import gStyles from "../../styles/styles";
+import { useMainContext } from "../../context/MainContext";
 import { COLORS, SIZES } from "../../constants/theme";
+import gStyles from "../../styles/styles";
 
-const CreatePin = () => {
-  const navigation = useNavigation("");
+const CreatePin = ({ route }) => {
+  const navigation = useNavigation();
+  const { user, setUser, handleLogout, setIsLocked } = useMainContext();
+
   const [inputs, setInputs] = useState("");
   const [index, setIndex] = useState([]);
   const [first, setFirst] = useState("");
   const [second, setSecond] = useState("");
   const [isDone, setIsDone] = useState(false);
+  const [isLogout, setIsLogout] = useState(false);
 
-  const pins = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "back"];
+  const { mode } = route.params;
 
-  console.log("inp", inputs);
-  console.log("fir", first);
-  console.log("sec", second);
+  const pins = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "finger",
+    "0",
+    "back",
+  ];
 
   useEffect(() => {
-    console.log(inputs);
     if (inputs.length === 4) {
-      if (!first) {
-        setFirst(inputs);
+      if (mode === "locked") {
+        if (user.passCode === inputs) return setIsLocked(false);
+
+        ToastAndroid.show("Incorrect PIN, try again", ToastAndroid.SHORT);
         setIndex([]);
-        return setInputs("");
+        setInputs("");
       } else {
-        setSecond(inputs);
+        if (!first) {
+          setFirst(inputs);
+          setIndex([]);
+          return setInputs("");
+        } else {
+          setSecond(inputs);
+        }
       }
     }
   }, [inputs]);
 
   useEffect(() => {
-    if (first && second) {
-      if (first === second) return setIsDone(true);
-      else {
-        setIndex([]);
-        setInputs("");
-        setFirst("");
-        setSecond("");
+    (async () => {
+      if (first && second) {
+        if (first === second) {
+          const user = JSON.parse(await SecureStore.getItemAsync("user"));
+
+          user.passCode = first;
+
+          await SecureStore.setItemAsync("user", JSON.stringify(user));
+          setUser((prev) => ({ ...prev, passCode: first }));
+
+          if (mode === "change-pin") {
+            ToastAndroid.show("PIN changed successfully", ToastAndroid.SHORT);
+            return navigation.goBack();
+          } else {
+            setIsDone(true);
+          }
+        } else {
+          ToastAndroid.show("PIN doesn't match, try again", ToastAndroid.SHORT);
+          setIndex([]);
+          setInputs("");
+          setFirst("");
+          setSecond("");
+        }
       }
-    }
+    })();
   }, [first, second]);
 
   useEffect(() => {
-    if (isDone)
+    if (isDone) {
+      setIsLocked(false);
+      setUser((prev) => ({ ...prev, passCode: first }));
       setTimeout(() => {
-        navigation.navigation("");
+        navigation.navigate("main-navigation");
+        navigation.reset({ index: 0, routes: [{ name: "main-navigation" }] });
       }, 3000);
+    }
   }, [isDone]);
 
-  const handleInputPress = (input) => {
-    if (input === "") return;
+  async function handleInputPress(input) {
+    if (input === "finger") {
+      if (mode === "locked") {
+        if (!user.isBiometrics) {
+          return ToastAndroid.show(
+            "Enable biometrics in setting",
+            ToastAndroid.SHORT
+          );
+        }
+      } else return;
+
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Verify user",
+        cancelLabel: "Cancel",
+      });
+
+      if (result.success) {
+        try {
+          return setIsLocked(false);
+        } catch (error) {
+          console.log("unlock-biometrics: ", error);
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            "Internal server error";
+
+          if (message === "Password incorrect") {
+            return ToastAndroid.show("Login with password", ToastAndroid.SHORT);
+          }
+
+          console.log(error);
+          console.log(message);
+
+          return ToastAndroid.show(message, ToastAndroid.SHORT);
+        }
+      }
+      return;
+    }
 
     if (input === "back") {
       if (inputs.length === 0) return;
@@ -77,7 +160,8 @@ const CreatePin = () => {
       setIndex(newIndex);
       setInputs((prev) => prev + input);
     }
-  };
+  }
+
   return (
     <View
       style={[gStyles.container(isDone ? COLORS.light100 : COLORS.blue100)]}
@@ -107,7 +191,15 @@ const CreatePin = () => {
                 fontSize: 18,
               }}
             >
-              {!first ? "Let’s setup your PIN" : "Re type your PIN again"}
+              {mode === "locked"
+                ? "Enter your PIN"
+                : mode === "new-pin"
+                ? !first
+                  ? "Let’s setup your PIN"
+                  : "Re type your PIN again"
+                : !first
+                ? "Type your new PIN"
+                : "Re type your new PIN"}
             </Text>
           </View>
           <View
@@ -121,53 +213,81 @@ const CreatePin = () => {
 
           <View
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
               position: "absolute",
               bottom: 20,
             }}
           >
-            {pins.map((p) => (
-              <TouchableOpacity
-                style={{
-                  width: SIZES.width / 3,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 20,
-                }}
-                onPress={() => handleInputPress(p)}
-                key={p}
-              >
-                {p === "back" ? (
-                  <View>
-                    <Ionicons
-                      name="backspace"
-                      size={40}
-                      color={COLORS.light100}
-                    />
-                  </View>
-                ) : (
-                  <Text
-                    style={{
-                      fontFamily: "bold",
-                      fontSize: 40,
-                      textAlign: "center",
-                      color: COLORS.light100,
-                    }}
-                  >
-                    {p}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+              }}
+            >
+              {pins.map((p) => (
+                <TouchableOpacity
+                  style={styles.key}
+                  onPress={() => handleInputPress(p)}
+                  key={p}
+                >
+                  {p === "back" || p === "finger" ? (
+                    <View>
+                      <Ionicons
+                        name={p === "back" ? "backspace" : "finger-print"}
+                        size={40}
+                        color={COLORS.light100}
+                      />
+                    </View>
+                  ) : (
+                    <Text
+                      style={{
+                        fontFamily: "bold",
+                        fontSize: 40,
+                        textAlign: "center",
+                        color: COLORS.light100,
+                      }}
+                    >
+                      {p}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={{ marginHorizontal: 20, marginTop: 20, marginBottom: 5 }}
+              onPress={() => setIsLogout(true)}
+            >
+              <Text style={styles.signOut}>Sign out</Text>
+            </TouchableOpacity>
           </View>
         </>
       )}
+      <PopAction
+        visible={isLogout}
+        onCancel={() => setIsLogout(false)}
+        onComplete={handleLogout}
+        headText="Logout?"
+        bodyText="Are you sure you want to logout"
+      />
     </View>
   );
 };
 
 export default CreatePin;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  signOut: {
+    fontFamily: "bold",
+    fontSize: 20,
+    color: COLORS.light100,
+    textDecorationLine: "underline",
+    textDecorationColor: COLORS.light100,
+    textAlign: "center",
+  },
+  key: {
+    width: SIZES.width / 3,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+});

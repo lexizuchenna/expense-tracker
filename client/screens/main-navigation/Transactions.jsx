@@ -1,21 +1,15 @@
-import * as SecureStore from "expo-secure-store";
-import { StyleSheet, View, StatusBar, FlatList } from "react-native";
-import { useState } from "react";
+import { View, StatusBar, FlatList } from "react-native";
 
-import { useMainContext } from "../../context/MainContext";
-
-import Loader from "../../components/Loader";
-import AuthHeader from "../../components/headers/AuthHeader";
-
-import { COLORS } from "../../constants/theme";
-import gStyles from "../../styles/styles";
+import Header from "../../components/headers/Header";
 import TransactionCard from "../../components/cards/TransactionCard";
 import Action from "../../components/Action";
 
-const Transactions = () => {
-  const { user, isAction, trxs } = useMainContext();
+import { useMainContext } from "../../context/MainContext";
+import { COLORS } from "../../constants/theme";
+import gStyles from "../../styles/styles";
 
-  const [isLoading, setIsLoading] = useState(false);
+const Transactions = () => {
+  const { isAction, trxs } = useMainContext();
 
   return (
     <View style={gStyles.container()}>
@@ -23,7 +17,7 @@ const Transactions = () => {
         backgroundColor={isAction ? "rgba(0, 119, 255, 0.2)" : COLORS.light100}
         barStyle="dark-content"
       />
-      <AuthHeader text="All Transactions" />
+      <Header text="All Transactions" />
       <View style={{ paddingBottom: 150, marginHorizontal: 20 }}>
         <FlatList
           data={trxs}
@@ -35,11 +29,8 @@ const Transactions = () => {
         />
       </View>
       {isAction && <Action />}
-      <Loader visible={isLoading} />
     </View>
   );
 };
 
 export default Transactions;
-
-const styles = StyleSheet.create({});

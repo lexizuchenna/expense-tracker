@@ -12,7 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { COLORS } from "../../constants/theme";
 
-const AuthHeader = ({ color, text, bg }) => {
+const Header = ({ color, text, bg }) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const topHeight =
@@ -56,4 +56,4 @@ const styles = StyleSheet.create({
   }),
 });
 
-export default AuthHeader;
+export default Header;

@@ -1,3 +1,4 @@
+import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useState, useEffect } from "react";
 import { ToastAndroid } from "react-native";
 import axios from "axios";
@@ -6,10 +7,9 @@ const Context = createContext();
 
 export const MainContext = ({ children }) => {
   const [isAction, setIsAction] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
   const [user, setUser] = useState(null);
-  const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [triggerUser, setTriggerUser] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
   const [triggerTrx, setTriggerTrx] = useState(false);
   const [trxs, setTrxs] = useState([]);
 
@@ -22,7 +22,7 @@ export const MainContext = ({ children }) => {
   }
 
   const url = axios.create({
-    baseURL: "http://192.168.0.166:3200/api",
+    baseURL: process.env.EXPO_PUBLIC_API_URL,
     timeout: 60000,
     timeoutErrorMessage: "Request timed out, try again later",
   });
@@ -49,6 +49,25 @@ export const MainContext = ({ children }) => {
     }
   }
 
+  async function handleLogout() {
+    try {
+      await SecureStore.deleteItemAsync("user");
+
+      setUser(null);
+      setIsLogin(false);
+
+      ToastAndroid.show("Logged out successfully", ToastAndroid.SHORT);
+    } catch (error) {
+      console.error("logout: ", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Internal server error";
+      return ToastAndroid.show(message, ToastAndroid.SHORT);
+    }
+  }
+
   useEffect(() => {
     if (user) {
       getTransactions();
@@ -66,9 +85,6 @@ export const MainContext = ({ children }) => {
 
         trxs,
         setTrxs,
-        isLoading,
-        triggerUser,
-        setTriggerUser,
 
         url,
 
@@ -77,6 +93,11 @@ export const MainContext = ({ children }) => {
 
         triggerTrx,
         setTriggerTrx,
+
+        isLocked,
+        setIsLocked,
+
+        handleLogout,
       }}
     >
       {children}

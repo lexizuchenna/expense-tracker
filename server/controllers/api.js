@@ -2,9 +2,9 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../models/User");
 const Token = require("../models/Token");
+const Transaction = require("../models/Transaction");
 
 const { checkEmail, sendMail } = require("../utils");
-const Transaction = require("../models/Transaction");
 
 async function signupUser(req, res) {
   try {
@@ -255,6 +255,43 @@ async function getTransactions(req, res) {
   }
 }
 
+async function changePassword(req, res) {
+  try {
+    const { old_password, password, password2 } = req.body;
+
+    const { id, password: pwd } = req.user;
+
+    if (Object.values(req.body).includes(""))
+      return res.status(200).json({ message: "Enter all fields", status: 403 });
+
+    const isMatch = await bcrypt.compare(old_password, pwd);
+
+    if (!isMatch)
+      return res.status(200).json({ message: "Invalid password", status: 403 });
+
+    if (password !== password2)
+      return res
+        .status(200)
+        .json({ message: "Passwords do not match", status: 403 });
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await User.findByIdAndUpdate(id, { password: hashedPassword });
+
+    return res.status(200).json({
+      message: "Password changed",
+      password: hashedPassword,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("change-password: ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", status: 500 });
+  }
+}
+
 module.exports = {
   signupUser,
   verifyCode,
@@ -265,4 +302,5 @@ module.exports = {
   updateTransaction,
   deleteTransaction,
   getTransactions,
+  changePassword,
 };
