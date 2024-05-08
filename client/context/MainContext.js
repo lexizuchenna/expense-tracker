@@ -8,6 +8,7 @@ const Context = createContext();
 export const MainContext = ({ children }) => {
   const [isAction, setIsAction] = useState(false);
   const [isLocked, setIsLocked] = useState(true);
+  const [isTrxLoading, setIsTrxLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
   const [triggerTrx, setTriggerTrx] = useState(false);
@@ -16,16 +17,12 @@ export const MainContext = ({ children }) => {
   function newAbortSignal(time) {
     const abortController = new AbortController();
 
-    setTimeout(() => abortController.abort(), time || 1000);
+    setTimeout(() => abortController.abort("Request timeout"), time || 1000);
 
     return abortController.signal;
   }
 
-  const url = axios.create({
-    baseURL: process.env.EXPO_PUBLIC_API_URL,
-    timeout: 60000,
-    timeoutErrorMessage: "Request timed out, try again later",
-  });
+  const url = axios.create({ baseURL: process.env.EXPO_PUBLIC_API_URL });
   url.interceptors.request.use((req) => {
     req.headers.Authorization = user?._id;
     req.headers.Accept = "application/json";
@@ -35,17 +32,23 @@ export const MainContext = ({ children }) => {
 
   async function getTransactions() {
     try {
+      setIsTrxLoading(true);
       const { data } = await url.get("/transactions");
 
       if (data.status === 200) setTrxs(data.transactions);
     } catch (error) {
-      console.error("get-transactions: ", error);
+      console.error("get-transactions: ", JSON.stringify(error));
       const message =
         error?.response?.data?.message ||
         error?.response?.data ||
         error?.message ||
         "Internal server error";
-      return ToastAndroid.show(message, ToastAndroid.SHORT);
+      return ToastAndroid.show(
+        message === "canceled" ? "Transaction request timeout" : message,
+        ToastAndroid.SHORT
+      );
+    } finally {
+      setIsTrxLoading(false);
     }
   }
 
@@ -93,6 +96,7 @@ export const MainContext = ({ children }) => {
 
         triggerTrx,
         setTriggerTrx,
+        isTrxLoading,
 
         isLocked,
         setIsLocked,

@@ -7,6 +7,7 @@ import {
   StatusBar,
   Platform,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,7 +29,7 @@ const Home = () => {
   const topHeight =
     Platform.OS === "android" ? StatusBar.currentHeight : insets;
 
-  const { isAction, user, trxs, triggerTrx } = useMainContext();
+  const { isAction, user, trxs, triggerTrx, isTrxLoading } = useMainContext();
 
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
@@ -248,7 +249,17 @@ const Home = () => {
           </TouchableOpacity>
         </View>
         <View>
-          {trxs.length > 0 ? (
+          {isTrxLoading ? (
+            <View
+              style={{
+                minHeight: 220,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ActivityIndicator color={COLORS.blue100} size="large" />
+            </View>
+          ) : trxs.length > 0 ? (
             <FlatList
               data={trxs}
               renderItem={({ item, index }) => (
