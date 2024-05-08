@@ -4,14 +4,14 @@ This is an expense tracker app created using react native and nodejs(express)
 
 ## Images
 
-![on-boarding]("./screenshots/on-boarding.png")
-![signup]("./screenshots/signup.png")
-![locked]("./screenshots/locked.png")
-![home]("./screenshots/home.png")
-![add-transaction]("./screenshots/add-transaction.png")
-![transaction]("./screenshots/transaction.png")
-![transactions]("./screenshots/transactions.png")
-![settings]("./screenshots/settings.png")
+![on-boarding](./screenshots/on-boarding.png)
+![signup](./screenshots/signup.png)
+![locked](./screenshots/locked.png)
+![home](./screenshots/home.png)
+![add-transaction](./screenshots/add-transaction.png)
+![transaction](./screenshots/transaction.png)
+![transactions](./screenshots/transactions.png)
+![settings](./screenshots/settings.png)
 
 ## Download or clone this repo
 
